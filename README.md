@@ -31,15 +31,18 @@
 ### 1) 🧰 准备环境
 
 - Python 3.11+
-- [uv](https://docs.astral.sh/uv/)
 - 可用的 LLM API Key（OpenAI / Anthropic / Gemini / 兼容 OpenAI 接口）
 
-### 2) 📦 安装依赖
+### 2) 📦 安装（推荐：PyPI）
 
 ```bash
-git clone https://github.com/kali20gakki/msAgent.git
-cd msAgent
-uv sync
+pip install -U mindstudio-agent
+```
+
+安装完成后可用以下命令确认：
+
+```bash
+msagent --version
 ```
 
 ### 3) 🔐 配置 LLM（必做）
@@ -47,19 +50,19 @@ uv sync
 推荐先用 OpenAI：
 
 ```bash
-uv run msagent config --llm-provider openai --llm-api-key "your-key" --llm-model "gpt-4o-mini"
+msagent config --llm-provider openai --llm-api-key "your-key" --llm-model "gpt-4o-mini"
 ```
 
 检查配置是否生效：
 
 ```bash
-uv run msagent config --show
+msagent config --show
 ```
 
 ### 4) 🖥️ 启动 TUI
 
 ```bash
-uv run msagent chat --tui
+msagent chat --tui
 ```
 
 ### 5) 📊 性能分析
@@ -70,18 +73,31 @@ uv run msagent chat --tui
 请分析 /path/to/profiler_output 的性能瓶颈，重点关注通信和高耗时算子。
 ```
 
+### 6) 🧪 可选：从源码运行（开发场景）
+
+如需调试或二次开发，再使用源码方式：
+
+```bash
+git clone https://github.com/kali20gakki/msAgent.git
+cd msAgent
+uv sync
+uv run msagent chat --tui
+```
+
 ---
 
 ## 📚 常用命令
 
+如果你是源码方式（`git clone` + `uv sync`）运行，请在下列命令前加 `uv run`。
+
 | 命令 | 说明 |
 |---|---|
-| `uv run msagent chat --tui` | 启动 TUI 交互 |
-| `uv run msagent chat` | 启动 CLI 交互 |
-| `uv run msagent ask "..."` | 单轮提问 |
-| `uv run msagent config --show` | 查看当前配置 |
-| `uv run msagent mcp list` | 查看 MCP 服务器 |
-| `uv run msagent info` | 查看工具信息 |
+| `msagent chat --tui` | 启动 TUI 交互 |
+| `msagent chat` | 启动 CLI 交互 |
+| `msagent ask "..."` | 单轮提问 |
+| `msagent config --show` | 查看当前配置 |
+| `msagent mcp list` | 查看 MCP 服务器 |
+| `msagent info` | 查看工具信息 |
 
 ---
 
@@ -110,19 +126,19 @@ uv run msagent chat --tui
 OpenAI:
 
 ```bash
-uv run msagent config --llm-provider openai --llm-api-key "your-key" --llm-model "gpt-4o-mini"
+msagent config --llm-provider openai --llm-api-key "your-key" --llm-model "gpt-4o-mini"
 ```
 
 Anthropic:
 
 ```bash
-uv run msagent config --llm-provider anthropic --llm-api-key "your-key" --llm-model "claude-3-5-sonnet-20241022"
+msagent config --llm-provider anthropic --llm-api-key "your-key" --llm-model "claude-3-5-sonnet-20241022"
 ```
 
 Gemini:
 
 ```bash
-uv run msagent config --llm-provider gemini --llm-api-key "your-key" --llm-model "gemini-2.0-flash"
+msagent config --llm-provider gemini --llm-api-key "your-key" --llm-model "gemini-2.0-flash"
 ```
 
 说明：OpenAI 兼容接口与 OpenAI Provider 共用 `openai`（通过 `--llm-base-url` 指向兼容服务）。
@@ -130,7 +146,7 @@ uv run msagent config --llm-provider gemini --llm-api-key "your-key" --llm-model
 OpenAI 兼容接口（自定义 Base URL）：
 
 ```bash
-uv run msagent config --llm-provider openai --llm-api-key "your-key" --llm-base-url "http://127.0.0.1:8045/v1" --llm-model "your-model-name"
+msagent config --llm-provider openai --llm-api-key "your-key" --llm-base-url "http://127.0.0.1:8045/v1" --llm-model "your-model-name"
 ```
 
 ### 🔌 MCP 服务器管理
@@ -139,13 +155,13 @@ uv run msagent config --llm-provider openai --llm-api-key "your-key" --llm-base-
 
 ```bash
 # 列表
-uv run msagent mcp list
+msagent mcp list
 
 # 添加
-uv run msagent mcp add --name filesystem --command npx --args "-y,@modelcontextprotocol/server-filesystem,/path"
+msagent mcp add --name filesystem --command npx --args "-y,@modelcontextprotocol/server-filesystem,/path"
 
 # 删除
-uv run msagent mcp remove --name filesystem
+msagent mcp remove --name filesystem
 ```
 
 ### 📁 配置文件位置
