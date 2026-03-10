@@ -179,3 +179,51 @@ def test_build_model_uses_resolved_max_tokens_for_auto_mode(
     )
 
     assert "max_completion_tokens" not in captured
+
+
+def test_build_model_normalizes_responses_endpoint_and_enables_responses_api(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, Any] = {}
+
+    def _fake_chat_openai(**kwargs: Any):
+        captured.update(kwargs)
+        return object()
+
+    monkeypatch.setattr(llm_module, "ChatOpenAI", _fake_chat_openai)
+
+    DeepAgentsClient(
+        LLMConfig(
+            provider="openai",
+            api_key="k",
+            model="gpt-5.2",
+            base_url="https://gmn.chuangzuoli.com/v1/responses",
+        )
+    )
+
+    assert captured["base_url"] == "https://gmn.chuangzuoli.com/v1"
+    assert captured["use_responses_api"] is True
+
+
+def test_build_model_normalizes_chat_completions_endpoint(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, Any] = {}
+
+    def _fake_chat_openai(**kwargs: Any):
+        captured.update(kwargs)
+        return object()
+
+    monkeypatch.setattr(llm_module, "ChatOpenAI", _fake_chat_openai)
+
+    DeepAgentsClient(
+        LLMConfig(
+            provider="custom",
+            api_key="k",
+            model="deepseek-chat",
+            base_url="https://example.com/v1/chat/completions",
+        )
+    )
+
+    assert captured["base_url"] == "https://example.com/v1"
+    assert "use_responses_api" not in captured

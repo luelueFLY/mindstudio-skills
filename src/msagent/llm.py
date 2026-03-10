@@ -4,6 +4,7 @@ import json
 from collections.abc import AsyncGenerator
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit, urlunsplit
 
 from deepagents.backends.filesystem import FilesystemBackend
 from deepagents import create_deep_agent
@@ -15,6 +16,29 @@ from pydantic import create_model
 
 from .config import LLMConfig
 from .mcp_client import mcp_manager
+
+
+def _resolve_openai_base_url(base_url: str) -> tuple[str, bool]:
+    """Normalize OpenAI-compatible base URLs and detect Responses API endpoints."""
+    normalized = (base_url or "").strip()
+    if not normalized:
+        return "", False
+
+    parsed = urlsplit(normalized)
+    path = parsed.path.rstrip("/")
+    lower_path = path.lower()
+    use_responses_api = False
+
+    if lower_path.endswith("/responses"):
+        path = path[: -len("/responses")]
+        use_responses_api = True
+    elif lower_path.endswith("/chat/completions"):
+        path = path[: -len("/chat/completions")]
+
+    resolved = urlunsplit(
+        (parsed.scheme, parsed.netloc, path or "", parsed.query, parsed.fragment)
+    ).rstrip("/")
+    return resolved, use_responses_api
 
 
 class Message:
@@ -187,7 +211,13 @@ class DeepAgentsClient:
             if resolved_max_tokens is not None:
                 kwargs["max_completion_tokens"] = resolved_max_tokens
             if config.base_url:
-                kwargs["base_url"] = config.base_url
+                resolved_base_url, use_responses_api = _resolve_openai_base_url(
+                    config.base_url
+                )
+                if resolved_base_url:
+                    kwargs["base_url"] = resolved_base_url
+                if use_responses_api:
+                    kwargs["use_responses_api"] = True
             return ChatOpenAI(**kwargs)
 
         if provider == "anthropic":
