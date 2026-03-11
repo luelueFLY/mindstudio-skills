@@ -9,6 +9,11 @@
   <img src="https://raw.githubusercontent.com/kali20gakki/images/main/msagent.gif" alt="msAgent">
 </p>
 
+
+## 最新消息
+
+- 2026-03-11：v0.1 PyPi whl包待发布
+
 ## 🔍 支持的分析场景与扩展能力
 
 - ⚙️ 单卡性能问题：高耗时算子、计算热点、重叠度不足等
@@ -18,13 +23,6 @@
 - 🔌 MCP 扩展：基于 Model Context Protocol 接入工具（默认启用 `msprof-mcp`）
 - 🧠 Skills 扩展：自动加载 `skills/` 目录技能，复用领域分析流程和知识
 ---
-
-## 使用示例
-- MFU计算
-<p align="center">
-  <img src="https://raw.githubusercontent.com/kali20gakki/images/main/mfu.jpeg" alt="mfu">
-</p>
-
 
 ## ⚡ 快速上手
 
@@ -322,6 +320,32 @@ uv sync --dev
 uv run pytest
 uv run ruff check .
 uv run ruff format .
+```
+
+---
+
+## 使用效果展示
+
+| 场景 | 效果展示 |
+|---|---|
+| MFU 计算 | <img src="https://raw.githubusercontent.com/kali20gakki/images/main/mfu.jpeg" alt="MFU 计算示例" width="800"> |
+
+---
+
+## 版本说明
+
+| 项目 | 说明 |
+|---|---|
+| 当前版本 | `0.1.0` |
+| 包名 | `mindstudio-agent` |
+| 命令行入口 | `msagent` |
+| Python 要求 | `>=3.11` |
+| 版本策略 | 遵循语义化版本（SemVer），补丁版本以兼容性修复为主，次版本新增功能保持向后兼容，主版本包含不兼容变更。 |
+
+可通过以下命令查看本地安装版本：
+
+```bash
+msagent --version
 ```
 
 ---
