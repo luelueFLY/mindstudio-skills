@@ -37,7 +37,7 @@
 - 下文中 Linux / macOS 默认使用 `bash` / `zsh`
 - Windows 示例默认使用 CMD（命令提示符）；若你使用 PowerShell，可将 `set KEY=value` 改为 `$env:KEY = "value"`；若你使用 Git Bash / WSL，可直接复用 Linux / macOS 命令
 
-### 2) 📦 安装（推荐：PyPI）
+### 2) 📦 安装（现暂时没上传到PyPi, 请通过源码clone）
 
 ```bash
 pip install -U mindstudio-agent
@@ -53,18 +53,20 @@ msagent --version
 
 推荐先用 OpenAI：
 
+如果你是源码方式（`git clone` + `uv sync`）运行，请将下列命令中的 `msagent` 替换为 `uv run msagent`。
+
 Linux / macOS：
 
 ```bash
 export OPENAI_API_KEY="your-key"
-msagent config --llm-provider openai --llm-api-key-env OPENAI_API_KEY --llm-model "gpt-4o-mini"
+msagent config --llm-provider openai --llm-model "gpt-4o-mini"
 ```
 
 Windows（CMD）：
 
 ```cmd
 set OPENAI_API_KEY=your-key
-msagent config --llm-provider openai --llm-api-key-env OPENAI_API_KEY --llm-model "gpt-4o-mini"
+msagent config --llm-provider openai --llm-model "gpt-4o-mini"
 ```
 
 检查配置是否生效：
@@ -160,14 +162,14 @@ Linux / macOS：
 
 ```bash
 export OPENAI_API_KEY="your-key"
-msagent config --llm-provider openai --llm-api-key-env OPENAI_API_KEY --llm-model "gpt-4o-mini"
+msagent config --llm-provider openai --llm-model "gpt-4o-mini"
 ```
 
 Windows（CMD）：
 
 ```cmd
 set OPENAI_API_KEY=your-key
-msagent config --llm-provider openai --llm-api-key-env OPENAI_API_KEY --llm-model "gpt-4o-mini"
+msagent config --llm-provider openai --llm-model "gpt-4o-mini"
 ```
 
 Anthropic:
@@ -176,14 +178,14 @@ Linux / macOS：
 
 ```bash
 export ANTHROPIC_API_KEY="your-key"
-msagent config --llm-provider anthropic --llm-api-key-env ANTHROPIC_API_KEY --llm-model "claude-3-5-sonnet-20241022"
+msagent config --llm-provider anthropic --llm-model "claude-3-5-sonnet-20241022"
 ```
 
 Windows（CMD）：
 
 ```cmd
 set ANTHROPIC_API_KEY=your-key
-msagent config --llm-provider anthropic --llm-api-key-env ANTHROPIC_API_KEY --llm-model "claude-3-5-sonnet-20241022"
+msagent config --llm-provider anthropic --llm-model "claude-3-5-sonnet-20241022"
 ```
 
 Gemini:
@@ -192,14 +194,14 @@ Linux / macOS：
 
 ```bash
 export GEMINI_API_KEY="your-key"
-msagent config --llm-provider gemini --llm-api-key-env GEMINI_API_KEY --llm-model "gemini-2.0-flash"
+msagent config --llm-provider gemini --llm-model "gemini-2.0-flash"
 ```
 
 Windows（CMD）：
 
 ```cmd
 set GEMINI_API_KEY=your-key
-msagent config --llm-provider gemini --llm-api-key-env GEMINI_API_KEY --llm-model "gemini-2.0-flash"
+msagent config --llm-provider gemini --llm-model "gemini-2.0-flash"
 ```
 
 说明：OpenAI 兼容接口与 OpenAI Provider 共用 `openai`（通过 `--llm-base-url` 指向兼容服务）。
@@ -215,14 +217,14 @@ Linux / macOS：
 
 ```bash
 export OPENAI_API_KEY="your-key"
-msagent config --llm-provider openai --llm-api-key-env OPENAI_API_KEY --llm-base-url "https://api.deepseek.com" --llm-model "deepseek-chat" --llm-max-tokens 0
+msagent config --llm-provider openai --llm-base-url "https://api.deepseek.com" --llm-model "deepseek-chat" --llm-max-tokens 0
 ```
 
 Windows（CMD）：
 
 ```cmd
 set OPENAI_API_KEY=your-key
-msagent config --llm-provider openai --llm-api-key-env OPENAI_API_KEY --llm-base-url "https://api.deepseek.com" --llm-model "deepseek-chat" --llm-max-tokens 0
+msagent config --llm-provider openai --llm-base-url "https://api.deepseek.com" --llm-model "deepseek-chat" --llm-max-tokens 0
 ```
 
 ### 🔌 MCP 服务器管理
@@ -250,7 +252,7 @@ msagent mcp remove --name filesystem
 - 若不存在，则读取全局配置：
   - Linux / macOS：`~/.config/msagent/config.json`
   - Windows：`%USERPROFILE%\.config\msagent\config.json`（例如 `C:\Users\<用户名>\.config\msagent\config.json`）
-- 安全策略：配置文件仅保存 `api_key_env`，不会保存明文 API Key
+- 安全策略：配置文件不会保存明文 API Key；默认按 Provider 读取对应环境变量（如 `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` / `GEMINI_API_KEY`）
 
 ### 🧠 Skills
 
