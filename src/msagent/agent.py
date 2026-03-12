@@ -13,6 +13,7 @@ from .config import AppConfig, config_manager
 from .interfaces import AgentBackend, AgentEvent, AgentStatus, UsageSnapshot
 from .llm import Message, create_llm_client
 from .mcp_client import mcp_manager
+from .tools import create_tool_invoker
 
 
 class Agent(AgentBackend):
@@ -25,7 +26,8 @@ class Agent(AgentBackend):
         self._session_number = 1
         self._initialized = False
         self._error_message = ""
-        self._workspace_root = Path.cwd()
+        self._workspace_root = Path.cwd().resolve()
+        self._tool_invoker = create_tool_invoker(self._workspace_root, mcp_manager)
         self._file_index_cache: tuple[float, list[str]] | None = None
         self._loaded_skill_sources: list[str] = []
         self._loaded_skills: list[str] = []
@@ -81,6 +83,7 @@ class Agent(AgentBackend):
                 memory=self.config.deepagents.memory,
                 recursion_limit=self.config.deepagents.recursion_limit,
                 workspace_root=self._workspace_root,
+                tool_invoker=self._tool_invoker.call_tool,
             )
             self._loaded_skill_sources = skill_sources
             self._loaded_skills = self._discover_skills(skill_sources)
@@ -180,7 +183,7 @@ class Agent(AgentBackend):
 
         self.messages.append(Message("user", self._inject_file_context(user_input)))
         all_messages = [Message("system", self.get_system_prompt())] + self.messages
-        tools = mcp_manager.get_all_tools()
+        tools = self._tool_invoker.get_tools()
 
         timeout_s = float(os.getenv("MSAGENT_LLM_TIMEOUT", "600"))
         try:
@@ -224,7 +227,7 @@ class Agent(AgentBackend):
 
         self.messages.append(Message("user", self._inject_file_context(user_input)))
         all_messages = [Message("system", self.get_system_prompt())] + self.messages
-        tools = mcp_manager.get_all_tools()
+        tools = self._tool_invoker.get_tools()
 
         timeout_s = float(os.getenv("MSAGENT_LLM_TIMEOUT", "3600"))
         start = time.monotonic()

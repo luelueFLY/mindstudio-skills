@@ -1,7 +1,7 @@
 """LLM client for msagent (deepagents-based)."""
 
 import json
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Awaitable, Callable
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit, urlunsplit
@@ -76,6 +76,7 @@ class DeepAgentsClient:
         memory: list[str] | None = None,
         recursion_limit: int = 80,
         workspace_root: str | Path | None = None,
+        tool_invoker: Callable[[str, dict[str, Any]], Awaitable[str]] | None = None,
     ):
         self.config = config
         self.last_usage: dict[str, Any] | None = None
@@ -89,6 +90,7 @@ class DeepAgentsClient:
             if workspace_root is not None
             else Path.cwd().resolve()
         )
+        self._tool_invoker = tool_invoker or mcp_manager.call_tool
         self._backend = FilesystemBackend(
             root_dir=self._workspace_root,
             virtual_mode=False,
@@ -277,7 +279,10 @@ class DeepAgentsClient:
         args_schema = self._json_schema_to_model(tool_name, parameters)
 
         async def _runner(**kwargs: Any) -> str:
-            return await mcp_manager.call_tool(tool_name, kwargs)
+            try:
+                return await self._tool_invoker(tool_name, kwargs)
+            except Exception as exc:
+                return f"Error calling tool {tool_name}: {exc}"
 
         return StructuredTool.from_function(
             coroutine=_runner,
@@ -507,6 +512,7 @@ def create_llm_client(
     memory: list[str] | None = None,
     recursion_limit: int = 80,
     workspace_root: str | Path | None = None,
+    tool_invoker: Callable[[str, dict[str, Any]], Awaitable[str]] | None = None,
 ) -> DeepAgentsClient:
     """Factory function to create deepagents client."""
     return DeepAgentsClient(
@@ -515,4 +521,5 @@ def create_llm_client(
         memory=memory,
         recursion_limit=recursion_limit,
         workspace_root=workspace_root,
+        tool_invoker=tool_invoker,
     )

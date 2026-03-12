@@ -557,7 +557,7 @@ class CustomFooter(Static):
         super().__init__(**kwargs)
         self._session_status = "会话: #1"
         self._model_status = "模型: unknown"
-        self._context_status = "提示词: N/A"
+        self._context_status = "提示词: 未知"
         self._token_status = "Token: 0"
 
     def set_session_status(self, status: str) -> None:
@@ -1233,7 +1233,7 @@ class ChatScreen(Screen):
         token_text = (
             f"Token: {self._format_token_count(total_tokens)}"
             if total_tokens is not None
-            else "Token: N/A"
+            else "Token: 未知"
         )
         footer = self._query_footer()
         if footer is None:
@@ -1262,7 +1262,7 @@ class ChatScreen(Screen):
             footer = self._query_footer()
             if footer is None:
                 return
-            footer.set_context_status("提示词: N/A")
+            footer.set_context_status("提示词: 未知")
             return
         footer = self._query_footer()
         if footer is None:

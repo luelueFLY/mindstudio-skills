@@ -229,6 +229,42 @@ async def test_chat_stream_events_does_not_fallback_after_tool_only_run(
 
 
 @pytest.mark.asyncio
+async def test_build_structured_tool_uses_injected_tool_invoker(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _patch_model_build(monkeypatch)
+    calls: list[tuple[str, dict[str, Any]]] = []
+
+    async def _tool_invoker(name: str, arguments: dict[str, Any]) -> str:
+        calls.append((name, arguments))
+        return "tool-ok"
+
+    client = DeepAgentsClient(
+        LLMConfig(provider="openai", api_key="k", model="m"),
+        tool_invoker=_tool_invoker,
+    )
+    tool = client._build_structured_tool(
+        {
+            "type": "function",
+            "function": {
+                "name": "builtin__execute_python",
+                "description": "run python",
+                "parameters": {
+                    "type": "object",
+                    "properties": {"code": {"type": "string"}},
+                    "required": ["code"],
+                },
+            },
+        }
+    )
+
+    result = await tool.ainvoke({"code": "print(1)"})
+
+    assert result == "tool-ok"
+    assert calls == [("builtin__execute_python", {"code": "print(1)"})]
+
+
+@pytest.mark.asyncio
 async def test_chat_passes_skills_and_memory_to_create_deep_agent(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

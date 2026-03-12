@@ -104,7 +104,8 @@ async def test_initialize_loads_only_enabled_mcp_servers(monkeypatch: pytest.Mon
         skills=None,
         memory=None,
         recursion_limit=80,
-        workspace_root=None: fake_llm,
+        workspace_root=None,
+        tool_invoker=None: fake_llm,
     )
 
     config = make_config(
@@ -142,11 +143,13 @@ async def test_initialize_passes_deepagents_settings_to_llm_client(
         memory=None,
         recursion_limit=80,
         workspace_root=None,
+        tool_invoker=None,
     ):
         captured["skills"] = skills
         captured["memory"] = memory
         captured["recursion_limit"] = recursion_limit
         captured["workspace_root"] = workspace_root
+        captured["tool_invoker"] = tool_invoker
         return fake_llm
 
     monkeypatch.setattr(agent_module, "create_llm_client", _fake_create_llm_client)
@@ -167,6 +170,7 @@ async def test_initialize_passes_deepagents_settings_to_llm_client(
     assert captured["memory"] == ["/memory/AGENTS.md"]
     assert captured["recursion_limit"] == config.deepagents.recursion_limit
     assert captured["workspace_root"] == tmp_path
+    assert callable(captured["tool_invoker"])
 
 
 def test_resolve_skill_sources_includes_packaged_skills(
