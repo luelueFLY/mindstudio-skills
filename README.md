@@ -30,424 +30,429 @@
 
 ### 1) 🧰 准备环境
 
-- Python 3.11+
-- 可用的 LLM API Key（OpenAI / Anthropic / Gemini / 兼容 OpenAI 接口）
+- Python `3.11+`
+- 推荐使用 `uv`
+- 至少准备一个可用的 LLM API Key
 
 说明：
-- 下文中 Linux / macOS 默认使用 `bash` / `zsh`
-- Windows 示例默认使用 CMD（命令提示符）；若你使用 PowerShell，可将 `set KEY=value` 改为 `$env:KEY = "value"`；若你使用 Git Bash / WSL，可直接复用 Linux / macOS 命令
+- 下文中的 `msagent` 适用于已安装命令行入口的场景。
+- 如果你是源码运行（`git clone` + `uv sync`），请把示例里的 `msagent` 替换成 `uv run msagent`。
+- Windows 示例默认使用 CMD；若使用 PowerShell，请把 `set KEY=value` 改为 `$env:KEY = "value"`。
 
-### 2) 📦 安装（现暂时没上传到PyPi, 请通过源码clone）
+### 2) 📦 安装
+
+源码运行方式：
+
+```bash
+git clone --recurse-submodules https://github.com/kali20gakki/msAgent.git
+cd msAgent
+uv sync
+```
+
+如果你已经拿到 wheel 或已经发布到包源，也可以直接安装：
 
 ```bash
 pip install -U mindstudio-agent
 ```
 
-安装完成后可用以下命令确认：
+检查版本：
 
 ```bash
 msagent --version
 ```
 
-### 3) 🔐 配置 LLM（必做）
+### 3) 🔐 配置默认 LLM
 
-推荐先用 OpenAI：
+当前 `config` 子命令直接支持的 Provider 是：`openai`、`anthropic`、`gemini`、`google`、`custom`。
 
-如果你是源码方式（`git clone` + `uv sync`）运行，请将下列命令中的 `msagent` 替换为 `uv run msagent`。
+OpenAI 示例：
 
 Linux / macOS：
 
 ```bash
 export OPENAI_API_KEY="your-key"
-msagent config --llm-provider openai --llm-model "gpt-4o-mini"
+msagent config --llm-provider openai --llm-model "gpt-5-mini-2025-08-07"
 ```
 
 Windows（CMD）：
 
 ```cmd
 set OPENAI_API_KEY=your-key
-msagent config --llm-provider openai --llm-model "gpt-4o-mini"
+msagent config --llm-provider openai --llm-model "gpt-5-mini-2025-08-07"
 ```
 
-检查配置是否生效：
+查看当前项目配置：
 
 ```bash
 msagent config --show
 ```
 
-### 4) 🖥️ 启动 TUI
+### 4) 🖥️ 启动会话
+
+进入交互式会话：
 
 ```bash
-msagent chat --tui
+msagent
 ```
 
-### 5) 📊 与msAgent一起性能调优
 
-把 Profiling 目录路径和你的问题一起发给 msAgent，例如：
+### 5) 📊 与 msAgent 一起性能调优
+
+把 Profiling 目录路径和问题一起发给 msAgent，例如：
 
 Linux / macOS：
 
 ```text
-请分析 /path/to/profiler_output 的性能瓶颈，重点关注通信和高耗时算子。
+请分析 /path/to/profiler_output 的性能瓶颈，重点关注通信效率、重叠度和高耗时算子。
 ```
 
 Windows：
 
 ```text
-请分析 C:\path\to\profiler_output 的性能瓶颈，重点关注通信和高耗时算子。
-```
-
-### 6) 🧪 可选：从源码运行（开发场景）
-
-如需调试或二次开发，再使用源码方式：
-
-以下命令在 Linux / macOS / Windows（CMD）一致：
-
-```bash
-git clone --recurse-submodules https://github.com/kali20gakki/msAgent.git
-cd msAgent
-uv sync
-uv run msagent chat --tui
-```
-
-如果你已经完成普通 `git clone`，请补充执行拉取 [mindstudio-skills](https://github.com/kali20gakki/mindstudio-skills)：
-
-```bash
-git submodule sync --recursive
-git submodule update --init --recursive --force
+请分析 C:\path\to\profiler_output 的性能瓶颈，重点关注通信效率、重叠度和高耗时算子。
 ```
 
 ---
 
 ## 📚 常用命令
 
-如果你是源码方式（`git clone` + `uv sync`）运行，请在下列命令前加 `uv run`。以下命令在 Linux / macOS / Windows 一致。
-
 | 命令 | 说明 |
 |---|---|
-| `msagent chat --tui` | 启动 TUI 交互 |
-| `msagent chat` | 启动 CLI 交互 |
-| `msagent ask "..."` | 单轮提问 |
-| `msagent config --show` | 查看当前配置 |
-| `msagent mcp list` | 查看 MCP 服务器 |
-| `msagent info` | 查看工具信息 |
+| `msagent` | 启动交互式会话 |
+| `msagent "..."` | 发送单条消息并输出结果 |
+| `msagent -r` | 恢复当前工作目录最近一次线程 |
+| `msagent -m gemini-2.5-pro` | 以指定模型别名启动当前会话 |
+| `msagent -a code-reviewer` | 以指定 Agent 启动当前会话 |
+| `msagent --no-stream "..."` | 关闭流式输出 |
+| `msagent config --show` | 查看当前项目配置 |
+| `msagent config --llm-provider openai --llm-model "gpt-5-mini-2025-08-07"` | 把默认模型写入当前项目配置 |
 
 ---
 
 ## 🗂️ 完整命令参考
 
-### 命令行入口
+### 默认会话入口
 
-| 命令 | 说明 |
+当前 CLI 的“默认命令”就是聊天会话本身。也就是说，直接执行 `msagent` 会进入会话模式，根级 `--help` 只会显示显式暴露的 `config` 子命令。
+
+会话入口实际支持的参数如下：
+
+```bash
+msagent [message] [--stream | --no-stream] [-w DIR] [-a AGENT] [-m MODEL_ALIAS] [-r] [--timer] [-am {semi-active,active,aggressive}] [-v]
+```
+
+| 参数 | 说明 |
 |---|---|
-| `msagent --version` | 查看版本 |
-| `msagent chat` | 启动 CLI 交互会话 |
-| `msagent chat --tui` | 启动 TUI 交互界面 |
-| `msagent chat "<message>"` | 直接发送一条消息 |
-| `msagent chat --stream` | 以流式方式输出回答（默认开启） |
-| `msagent chat --no-stream` | 关闭流式输出 |
-| `msagent ask "<question>"` | 单轮提问 |
-| `msagent ask --stream` | 单轮提问并流式输出（默认开启） |
-| `msagent ask --no-stream` | 单轮提问并一次性输出 |
-| `msagent config --show` | 查看当前配置 |
-| `msagent config --llm-provider <provider>` | 设置 LLM Provider |
-| `msagent config --llm-model <model>` | 设置模型名 |
-| `msagent config --llm-base-url <url>` | 设置 OpenAI 兼容接口地址 |
-| `msagent config --llm-max-tokens <n>` | 设置最大输出 token，`0` 表示自动 |
-| `msagent config --llm-api-key-env <ENV_NAME>` | 设置读取 API Key 的环境变量名 |
-| `msagent config --llm-api-key <key>` | 临时写入运行时 API Key（不会落盘保存明文） |
-| `msagent mcp list` | 查看 MCP 服务列表 |
-| `msagent mcp add --name <name> --command <cmd> --args "<args>"` | 添加 MCP 服务 |
-| `msagent mcp remove --name <name>` | 删除 MCP 服务 |
-| `msagent info` | 查看项目说明和配置位置 |
+| `message` | 可选位置参数；省略时进入交互式会话，传入时执行单轮请求 |
+| `-w`, `--working-dir` | 指定工作目录；`msAgent` 会从该目录下的 `.msagent/` 读取或初始化配置 |
+| `-a`, `--agent` | 指定 Agent 名称，例如 `general`、`code-reviewer` |
+| `-m`, `--model` | 指定模型别名，而不是 Provider 原始模型名；别名来自 `.msagent/config.llms.yml` 和 `.msagent/llms/*.yml` |
+| `-r`, `--resume` | 恢复最近一个线程；若同时传入 `message`，会在恢复后的线程上继续执行 |
+| `--stream` | 流式输出回答，默认开启 |
+| `--no-stream` | 关闭流式输出，等待完整回答后再输出 |
+| `--timer` | 打印启动阶段耗时，便于排查初始化慢的问题 |
+| `-am`, `--approval-mode` | 工具审批模式，可选 `semi-active`、`active`、`aggressive` |
+| `-v`, `--verbose` | 开启控制台和 `.msagent/logs/app.log` 调试日志输出 |
 
-说明：
-- `chat` 的位置参数 `message` 可省略；省略时进入 CLI 交互模式。
-- `ask` 适合脚本化单轮调用，`chat` 更适合连续对话。
-- `mcp add` 的 `--args` 使用逗号分隔，例如 `"-y,@modelcontextprotocol/server-filesystem,/tmp"`。
+审批模式说明：
 
-### 会话命令
-
-这些命令在 TUI 输入框和 `msagent chat` 的 CLI 交互模式中都可用，除特别标注外均对当前会话立即生效：
-
-| 命令 | 说明 |
+| 模式 | 说明 |
 |---|---|
-| `/new` | 开启新 Session（清空上下文） |
-| `/clear` | 清空当前 Session 的聊天历史 |
-| `/backend` | 查看当前 deepagents backend（等价于 `/backend status`） |
-| `/backend status` | 查看当前 deepagents backend |
-| `/backend filesystem` | 切换到 `FilesystemBackend` |
-| `/backend local_shell` | 切换到 `LocalShellBackend` |
-| `/shell` | 查看当前 deepagents backend（等价于 `/shell status`） |
-| `/shell status` | 查看当前 deepagents backend |
-| `/shell on` | 开启 `LocalShellBackend`（快捷命令） |
-| `/shell off` | 关闭 `LocalShellBackend`（快捷命令） |
-| `/exit` | 退出当前会话 |
+| `semi-active` | 默认模式；正常遵循审批规则 |
+| `active` | 跳过绝大多数审批，仅保留 `always_deny` |
+| `aggressive` | 跳过所有审批规则 |
 
-仅在 CLI 文本交互模式（`msagent chat`）中可用：
+示例：
 
-| 命令 | 说明 |
+```bash
+msagent -m gemini-2.5-pro
+msagent -a code-reviewer
+msagent -r "继续上一次分析，补充通信瓶颈优化建议"
+msagent --no-stream "总结这个 Profiling 的主要瓶颈"
+```
+
+### `config` 子命令
+
+`config` 用于查看和更新当前项目的默认模型配置：
+
+```bash
+msagent config [--show] [--llm-provider PROVIDER] [--llm-api-key KEY] [--llm-api-key-env ENV] [--llm-max-tokens N] [--llm-base-url URL] [--llm-model MODEL] [-w DIR] [-v]
+```
+
+| 参数 | 说明 |
 |---|---|
-| `/help` | 查看 CLI 交互命令帮助 |
+| `--show`, `-s` | 显示当前项目配置；如果未传任何更新参数，也会自动执行展示 |
+| `--llm-provider` | 只接受 `openai`、`anthropic`、`gemini`、`google`、`custom` |
+| `--llm-model`, `-m` | 设置默认 Provider 对应的原始模型名，例如 `gpt-5-mini-2025-08-07` |
+| `--llm-base-url` | 设置 OpenAI 兼容接口地址 |
+| `--llm-max-tokens` | 设置最大输出 token；`0` 表示交给模型或服务端默认值 |
+| `--llm-api-key-env` | 设置读取 API Key 的环境变量名 |
+| `--llm-api-key` | 只给当前进程临时注入 API Key，不会明文写入配置文件 |
+| `-w`, `--working-dir` | 指定要修改的项目目录 |
+| `-v`, `--verbose` | 输出更详细日志 |
 
-### TUI 快捷键
+补充说明：
 
-| 快捷键 | 说明 |
-|---|---|
-| `Enter` | 欢迎页进入聊天界面 |
-| `Ctrl+N` | 开启新会话 |
-| `Ctrl+L` | 清空当前对话 |
-| `Ctrl+Q` | 退出 TUI |
+- `gemini` 会被映射到内部 Provider `google`，默认读取的环境变量是 `GOOGLE_API_KEY`。
+- `config` 会把结果写入 `<working-dir>/.msagent/config.llms.yml`，并让默认 Agent 指向其中的 `default` 模型别名。
+- 仓库里还内置了 `deepseek`、`zhipuai`、`ollama`、`lmstudio`、`bedrock` 等模型别名，但它们不是通过 `config --llm-provider` 暴露的；更适合用 `-m <alias>`、`/model` 或手动编辑 `.msagent/llms/*.yml`。
 
-说明：
-- README 只记录当前代码里已确认且用户侧可依赖的快捷键。
-- 退出 TUI 可使用 `Ctrl+Q`；也可在会话输入框中使用 `/exit`。
-- 输入框存在命令/文件补全交互：当补全列表出现时，可用 `Up` / `Down` 选择，`Tab` 应用补全。
+示例：
+
+```bash
+msagent config --show
+msagent config --llm-provider anthropic --llm-model "claude-sonnet-4-5"
+msagent config --llm-provider openai --llm-base-url "https://api.deepseek.com" --llm-model "deepseek-chat" --llm-max-tokens 0
+msagent config --llm-provider custom --llm-base-url "https://example.com/v1" --llm-model "my-model"
+```
 
 ---
 
-## 🧵 会话管理（新对话 Session）
+## 💬 会话内命令与快捷键
 
-参考 Codex / Claude Code 的交互体验，msAgent 现在支持一键切换到新会话：
+### Slash 命令
 
-- 在 TUI 输入框中输入 `/new`
-- 或使用快捷键 `Ctrl+N`（Linux / macOS / Windows 终端默认一致；macOS 不是 `Cmd+N`）
-- 切换后会立即清空上下文（历史消息与上下文 token），从全新 Session 开始对话
-
-常用会话命令（TUI 输入框）：
+以下命令在交互式会话中可用：
 
 | 命令 | 说明 |
 |---|---|
-| `/new` | 开启新 Session（清空上下文） |
-| `/clear` | 清空当前 Session 的聊天历史 |
-| `/backend` | 查看当前 deepagents backend |
-| `/backend status` | 查看当前 deepagents backend |
-| `/backend filesystem` | 切换到 `FilesystemBackend` |
-| `/backend local_shell` | 切换到 `LocalShellBackend` |
-| `/shell` | 查看当前 deepagents backend |
-| `/shell status` | 查看当前 deepagents backend |
-| `/shell on` | 开启 `LocalShellBackend`（快捷命令） |
-| `/shell off` | 关闭 `LocalShellBackend`（快捷命令） |
-| `/exit` | 退出会话 |
+| `/help` | 显示会话命令帮助 |
+| `/hotkeys` | 显示当前输入框快捷键 |
+| `/agents` | 交互式切换 Agent，并把选中 Agent 写回默认配置 |
+| `/model` | 交互式切换当前 Agent 或子 Agent 的模型别名 |
+| `/tools` | 浏览当前 Agent 已加载的工具 |
+| `/skills` | 浏览当前 Agent 已加载的 Skills |
+| `/mcp` | 交互式启用或禁用当前已配置的 MCP 服务器 |
+| `/memory` | 打开 `.msagent/memory.md` 进行编辑 |
+| `/graph` | 在终端渲染当前 Agent Graph |
+| `/graph --browser` | 生成图像并尝试在浏览器中打开 |
+| `/clear` | 清屏并切换到一个新的线程 ID |
+| `/resume` | 从历史线程列表中选择并恢复 |
+| `/replay` | 从当前线程某条历史用户消息处重放 |
+| `/compress` | 压缩当前上下文到新线程 |
+| `/todo` | 查看当前线程的 todo 列表 |
+| `/todo 20` | 最多显示 20 条 todo |
+| `/approve` | 管理 `always_allow` / `always_ask` / `always_deny` 规则 |
+| `/exit` | 退出当前会话 |
 
 说明：
-- 上述 backend 切换命令同时适用于 TUI 输入框和 `msagent chat` 的 CLI 交互模式。
-- 切换结果仅对当前会话生效，不会写入全局配置文件。
 
-### ⚠️ LocalShellBackend 使用说明
+- 当前代码里没有 `/new`、`/backend`、`/shell` 这些旧命令。
+- `/mcp` 只负责切换已存在 MCP 服务的启用状态；新增或删除服务需要直接编辑配置文件。
+- `/memory` 和 `/approve` 都会使用 `CLI__EDITOR` 指定的编辑器，默认是 `vim`。
 
-当你输入 `/backend local_shell` 或 `/shell on` 时，msAgent 会把 deepagents backend 切换为 `LocalShellBackend`。
+### 输入框快捷键
 
-这会带来更强的本地执行能力，但也有明显风险：
+| 快捷键 | 说明 |
+|---|---|
+| `Ctrl+C` | 若输入框有内容则清空；若输入框为空，连续按两次退出 |
+| `Ctrl+J` | 插入换行 |
+| `Shift+Tab` | 切换审批模式 |
+| `Ctrl+B` | 切换 Bash 模式 |
+| `Ctrl+K` | 打开快捷键面板 |
+| `Tab` | 立即应用第一个补全结果 |
+| `Enter` | 提交消息；若当前选中补全项则先应用补全 |
 
-- `execute` 工具会直接在当前机器上执行 shell 命令
-- 没有沙箱隔离，命令以当前用户权限运行
-- 不适合生产环境、多租户环境或不受信任输入
-- 不建议读取或操作敏感文件、密钥、凭证和系统配置
+补充说明：
 
-推荐做法：
+- Slash 命令和 `@文件` / `@图片` 引用都支持补全。
+- 在 Agent、Model、Thread、Tool、Skill 等选择面板里，通常使用 `Up` / `Down` / `Enter` 操作。
 
-- 默认使用 `/backend filesystem`
-- 只有在确实需要本地 shell 能力时，再临时执行 `/shell on`
-- 使用结束后及时执行 `/shell off`
-- 涉及安装依赖、修改文件、网络访问等高风险操作时，先确认命令内容
+### Bash 模式说明
 
-如需在启动前预设 backend，仍可使用环境变量（高级用法）：
+按 `Ctrl+B` 后，输入框会切换到 Bash 模式。此时你输入的内容会直接通过：
 
 ```bash
-MSAGENT_DEEPAGENTS_BACKEND=local_shell msagent chat --tui
+bash -c "<your-command>"
 ```
+
+在当前 `working_dir` 下执行，并把 `stdout` / `stderr` 原样打印出来。
+
+注意：
+
+- 这里执行的是本机真实 Shell 命令，不是 LLM 工具调用结果。
+- 当前实现没有额外沙箱隔离，风险和你直接在终端执行命令一致。
+- 该模式依赖系统存在 `bash`，更适合 Linux、macOS、WSL 或 Git Bash 环境。
 
 ---
 
 ## 🌱 环境变量参考
 
-### LLM 与模型
+### LLM 鉴权与连接
 
 | 环境变量 | 说明 |
 |---|---|
-| `OPENAI_API_KEY` | OpenAI Provider 的 API Key |
-| `ANTHROPIC_API_KEY` | Anthropic Provider 的 API Key |
-| `GEMINI_API_KEY` | Gemini Provider 的 API Key |
-| `CUSTOM_API_KEY` | 自定义 OpenAI 兼容 Provider 的 API Key |
-| `OPENAI_MODEL` | OpenAI 默认模型名 |
-| `ANTHROPIC_MODEL` | Anthropic 默认模型名 |
-| `GEMINI_MODEL` | Gemini 默认模型名 |
-| `CUSTOM_MODEL` | 自定义 Provider 默认模型名 |
-| `CUSTOM_BASE_URL` | 自定义 Provider 的 Base URL |
+| `OPENAI_API_KEY` | OpenAI Provider API Key |
+| `ANTHROPIC_API_KEY` | Anthropic Provider API Key |
+| `GOOGLE_API_KEY` | Google / Gemini Provider API Key |
+| `CUSTOM_API_KEY` | 自定义 OpenAI 兼容 Provider API Key |
+| `DEEPSEEK_API_KEY` | DeepSeek 内置别名所使用的 API Key |
+| `ZHIPUAI_API_KEY` | 智谱内置别名所使用的 API Key |
+| `AWS_ACCESS_KEY_ID` | Bedrock 鉴权 |
+| `AWS_SECRET_ACCESS_KEY` | Bedrock 鉴权 |
+| `AWS_SESSION_TOKEN` | Bedrock 临时凭证 |
+| `CUSTOM_BASE_URL` | `custom` Provider 的默认 Base URL |
+| `HTTP_PROXY` / `http_proxy` | HTTP 代理 |
+| `HTTPS_PROXY` / `https_proxy` | HTTPS 代理 |
 
 说明：
-- 配置文件不会保存明文 API Key。
-- 若未显式传 `--llm-api-key-env`，msAgent 会按当前 Provider 自动读取对应的默认 API Key 环境变量。
 
-### Agent / deepagents 运行时
+- `msagent config --llm-provider gemini` 实际读取的是 `GOOGLE_API_KEY`。
+- `--llm-api-key` 只会注入当前进程，不会保存到配置文件。
+- 配置文件不会明文保存 API Key。
 
-| 环境变量 | 默认值 | 说明 |
-|---|---|---|
-| `MSAGENT_DEEPAGENTS_BACKEND` | `filesystem` | 启动时预设 deepagents backend。可选值：`filesystem` / `local_shell` |
-| `MSAGENT_ENABLE_LOCAL_SHELL` | 未设置 | 兼容旧用法；当值为 `1` / `true` / `yes` / `on` 时，启动时启用 `local_shell` |
-| `MSAGENT_LLM_TIMEOUT` | `600`（普通 `chat`） / `3600`（流式 `chat_stream`） | Agent 等待 LLM 返回的超时时间，单位秒 |
-| `MSAGENT_TOOL_TIMEOUT` | `1200` | MCP 工具调用超时，单位秒 |
-| `MSAGENT_LOCAL_SHELL_TIMEOUT` | `120` | `LocalShellBackend` 中 `execute` 工具的默认超时，单位秒 |
-| `MSAGENT_LOCAL_SHELL_MAX_OUTPUT_BYTES` | `100000` | `LocalShellBackend` 中 `execute` 输出的最大截断字节数 |
-| `MSAGENT_PYTHON_TOOL_TIMEOUT` | `30.0` | 内置 `builtin__execute_python` 工具的默认超时，单位秒 |
-| `MSAGENT_PYTHON_TOOL_MAX_TIMEOUT` | `120.0` | 内置 `builtin__execute_python` 工具允许的最大超时，单位秒 |
-| `MSAGENT_PYTHON_TOOL_OUTPUT_LIMIT` | `12000` | 内置 `builtin__execute_python` 工具的输出字符截断上限 |
+### 设置项覆盖
 
-优先级说明：
-- 若同时设置了 `MSAGENT_DEEPAGENTS_BACKEND` 和 `MSAGENT_ENABLE_LOCAL_SHELL`，以前者为准。
-- 运行时更推荐直接使用会话命令 `/backend ...` 或 `/shell ...` 切换；环境变量更适合启动前预设默认值。
+`msAgent` 使用 `pydantic-settings` 读取环境变量，并支持 `.env` 文件。当前代码里没有强制 `MSAGENT_` 前缀，嵌套字段使用 `__` 分隔。
 
-### 配置层环境变量补充
+常用覆盖项：
 
-除上面的显式环境变量外，配置系统本身还支持 `MSAGENT_` 前缀的嵌套环境变量覆盖（来自 `AppConfig` 的 `BaseSettings` 配置，嵌套分隔符是 `__`）。
+| 环境变量 | 说明 |
+|---|---|
+| `CLI__EDITOR` | 设置 `/memory`、`/approve` 使用的编辑器 |
+| `CLI__PROMPT_STYLE` | 修改输入提示符样式 |
+| `CLI__ENABLE_WORD_WRAP` | 是否启用自动换行 |
+| `CLI__MAX_AUTOCOMPLETE_SUGGESTIONS` | 设置补全候选上限 |
+| `LLM__OLLAMA_BASE_URL` | 设置 Ollama 地址 |
+| `LLM__LMSTUDIO_BASE_URL` | 设置 LM Studio OpenAI 兼容地址 |
+| `LOG_LEVEL` | 设置日志级别 |
+| `SUPPRESS_GRPC_WARNINGS` | 是否屏蔽 gRPC 警告，默认 `true` |
 
-例如：
+示例：
 
 ```bash
-MSAGENT__LLM__MODEL=gpt-4o-mini
-MSAGENT__LLM__BASE_URL=https://example.com/v1
-MSAGENT__THEME=light
+CLI__EDITOR=nvim
+CLI__PROMPT_STYLE=">> "
+CLI__MAX_AUTOCOMPLETE_SUGGESTIONS=20
+LLM__OLLAMA_BASE_URL=http://localhost:11434
+LOG_LEVEL=DEBUG
 ```
-
-说明：
-- 这是配置层通用能力，不是某个单独模块手写读取的固定变量列表。
-- 如果同时存在显式 Provider 环境变量（如 `OPENAI_API_KEY`、`CUSTOM_API_KEY`）和 `MSAGENT__...` 配置覆盖，最终行为仍以实际加载顺序与配置归一化逻辑为准。
-
-### LocalShellBackend 子进程环境
-
-当启用 `LocalShellBackend` 时，`execute` 工具不会继承完整宿主环境，而是只传递最小必要环境：
-
-| 环境变量 | 来源 |
-|---|---|
-| `PATH` | 透传当前进程的 `PATH`，若不存在则回退为 `/usr/bin:/bin` |
-| `HOME` | 若当前进程存在则透传 |
-| `LANG` | 若当前进程存在则透传 |
-| `LC_ALL` | 若当前进程存在则透传 |
-| `SHELL` | 若当前进程存在则透传 |
-| `TERM` | 若当前进程存在则透传 |
-| `USER` | 若当前进程存在则透传 |
-| `PYTHONIOENCODING` | 强制设置为 `utf-8` |
-
-说明：
-- `OPENAI_API_KEY` 等敏感变量不会自动传入 `LocalShellBackend` 子进程。
-- 这能降低误泄露风险，但不等于安全沙箱；`LocalShellBackend` 仍然是高风险能力。
 
 ---
 
 ## 🛠️ 参考：配置与扩展
 
-### 🤖 LLM 配置示例
+### 📁 项目本地配置目录
 
-OpenAI:
+当前实现使用“项目本地配置”，所有运行时文件都放在：
 
-Linux / macOS：
-
-```bash
-export OPENAI_API_KEY="your-key"
-msagent config --llm-provider openai --llm-model "gpt-4o-mini"
+```text
+<working-dir>/.msagent/
 ```
 
-Windows（CMD）：
+首次运行时，`msAgent` 会把 `resources/configs/default/` 里的默认模板复制到该目录。常见文件如下：
 
-```cmd
-set OPENAI_API_KEY=your-key
-msagent config --llm-provider openai --llm-model "gpt-4o-mini"
+| 文件 | 作用 |
+|---|---|
+| `.msagent/config.llms.yml` | 当前项目默认模型配置；`msagent config` 直接写这里 |
+| `.msagent/llms/*.yml` | 附带的模型别名集合 |
+| `.msagent/agents/*.yml` | Agent 定义，例如 `general`、`code-reviewer` |
+| `.msagent/subagents/*.yml` | SubAgent 定义 |
+| `.msagent/checkpointers/*.yml` | Checkpointer 配置 |
+| `.msagent/sandboxes/*.yml` | 沙箱配置模板 |
+| `.msagent/config.mcp.json` | MCP 服务器配置 |
+| `.msagent/config.approval.json` | 工具审批规则 |
+| `.msagent/config.checkpoints.db` | 会话 checkpoint 数据库 |
+| `.msagent/.history` | 输入历史 |
+| `.msagent/memory.md` | 用户偏好和项目上下文记忆 |
+
+### 🤖 模型别名与 Agent
+
+除了 `config` 写入的 `default` 别名外，仓库还自带一批可直接使用的模型别名，来源于 `.msagent/llms/*.yml`。示例包括：
+
+- OpenAI: `gpt-5-mini-thinking`
+- Anthropic: `sonnet-4.5`、`haiku-4.5`、`haiku-4.5-thinking`
+- Google: `gemini-3-pro`、`gemini-2.5-pro`、`gemini-2.5-pro-thinking`
+- DeepSeek: `deepseek-chat`
+- ZhipuAI: `glm-4.6`、`glm-4.6-thinking`
+- Bedrock / Ollama / LM Studio: 也有默认别名模板
+
+使用方式：
+
+- 临时指定会话模型：`msagent -m gemini-2.5-pro`
+- 在会话中持久切换 Agent / SubAgent 模型：`/model`
+- 临时指定 Agent：`msagent -a code-reviewer`
+- 在会话中切换默认 Agent：`/agents`
+
+默认模板里内置了至少两个 Agent：
+
+- `general`
+- `code-reviewer`
+
+### 🔌 MCP 配置
+
+默认模板会启用 `msprof-mcp`（仓库：[msprof-mcp](https://gitcode.com/kali20gakki1/msprof_mcp)）。
+
+当前代码中的 MCP 使用方式是：
+
+- 用 `/mcp` 在会话里切换已有服务的启用状态
+- 用编辑器直接修改 `.msagent/config.mcp.json` 来新增、删除或细调服务器定义
+
+配置文件格式示例：
+
+```json
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/workspace"],
+      "transport": "stdio",
+      "env": {},
+      "include": [],
+      "exclude": [],
+      "enabled": true,
+      "stateful": false
+    }
+  }
+}
 ```
 
-Anthropic:
+常用字段：
 
-Linux / macOS：
-
-```bash
-export ANTHROPIC_API_KEY="your-key"
-msagent config --llm-provider anthropic --llm-model "claude-3-5-sonnet-20241022"
-```
-
-Windows（CMD）：
-
-```cmd
-set ANTHROPIC_API_KEY=your-key
-msagent config --llm-provider anthropic --llm-model "claude-3-5-sonnet-20241022"
-```
-
-Gemini:
-
-Linux / macOS：
-
-```bash
-export GEMINI_API_KEY="your-key"
-msagent config --llm-provider gemini --llm-model "gemini-2.0-flash"
-```
-
-Windows（CMD）：
-
-```cmd
-set GEMINI_API_KEY=your-key
-msagent config --llm-provider gemini --llm-model "gemini-2.0-flash"
-```
-
-说明：OpenAI 兼容接口与 OpenAI Provider 共用 `openai`（通过 `--llm-base-url` 指向兼容服务）。
-
-`max_tokens` 默认建议使用自动模式（`0`）：
-- 自动模式不会向模型显式传 `max_tokens`，由服务端按模型默认值控制（最省维护）
-- 适配新模型时无需更新本地“模型参数表”
-- 如需手动覆盖，可用 `--llm-max-tokens <value>`
-
-OpenAI 兼容接口（自定义 Base URL）：
-
-Linux / macOS：
-
-```bash
-export OPENAI_API_KEY="your-key"
-msagent config --llm-provider openai --llm-base-url "https://api.deepseek.com" --llm-model "deepseek-chat" --llm-max-tokens 0
-```
-
-Windows（CMD）：
-
-```cmd
-set OPENAI_API_KEY=your-key
-msagent config --llm-provider openai --llm-base-url "https://api.deepseek.com" --llm-model "deepseek-chat" --llm-max-tokens 0
-```
-
-### 🔌 MCP 服务器管理
-
-默认配置会启用 `msprof-mcp`（仓库：[msprof-mcp](https://gitcode.com/kali20gakki1/msprof_mcp)）。你也可以手动管理 MCP。除路径写法外，命令在 Linux / macOS / Windows 一致：
-
-```bash
-# 列表
-msagent mcp list
-
-# 添加
-msagent mcp add --name filesystem --command npx --args "-y,@modelcontextprotocol/server-filesystem,/path"
-
-# 删除
-msagent mcp remove --name filesystem
-```
-
-`filesystem` 示例路径：
-- Linux / macOS：`msagent mcp add --name filesystem --command npx --args "-y,@modelcontextprotocol/server-filesystem,/path/to/workspace"`
-- Windows（CMD）：`msagent mcp add --name filesystem --command npx --args "-y,@modelcontextprotocol/server-filesystem,C:\path\to\workspace"`
-
-### 📁 配置文件位置
-
-- 优先读取当前工作目录：`config.json`
-- 若不存在，则读取全局配置：
-  - Linux / macOS：`~/.config/msagent/config.json`
-  - Windows：`%USERPROFILE%\.config\msagent\config.json`（例如 `C:\Users\<用户名>\.config\msagent\config.json`）
-- 安全策略：配置文件不会保存明文 API Key；默认按 Provider 读取对应环境变量（如 `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` / `GEMINI_API_KEY`）
+- `command` / `url`
+- `args`
+- `transport`
+- `env`
+- `include` / `exclude`
+- `enabled`
+- `stateful`
+- `repair_command` / `repair_timeout`
+- `timeout` / `sse_read_timeout` / `invoke_timeout`
 
 ### 🧠 Skills
 
-msAgent 的内置 Skills 已拆分到独立仓库 [mindstudio-skills](https://github.com/kali20gakki/mindstudio-skills)，在本仓通过 Git Submodule 挂载到根目录 `skills/`。
+Skills 会按以下候选目录自动加载：
 
-启动时会自动加载项目根目录 `skills/` 下的技能目录；若当前目录没有可用技能，会回退加载安装包内置技能（如 `op-mfu-calculator`）。格式如下：
+- `<working-dir>/skills`
+- 仓库根目录 `skills/`
+- 安装包内置技能目录
+- `<working-dir>/.msagent/skills`
+
+支持两种目录结构：
 
 ```text
 skills/
-  <skill-name>/
+  my-skill/
     SKILL.md
 ```
+
+```text
+skills/
+  profiling/
+    my-skill/
+      SKILL.md
+```
+
+其中 `SKILL.md` 需要包含 frontmatter，至少提供：
+
+```yaml
+---
+name: my-skill
+description: 这个技能做什么
+---
+```
+
+当前仓库里已经包含示例技能 `op-mfu-calculator`，会在无项目自定义 Skill 时作为兜底能力之一被加载。
 
 ---
 

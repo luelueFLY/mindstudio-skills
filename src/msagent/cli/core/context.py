@@ -1,0 +1,95 @@
+"""CLI-specific context dataclass."""
+
+import uuid
+from pathlib import Path
+
+from pydantic import BaseModel
+
+from msagent.cli.bootstrap.initializer import initializer
+from msagent.cli.bootstrap.timer import timer
+from msagent.configs import ApprovalMode
+from msagent.core.logging import get_logger
+
+logger = get_logger(__name__)
+
+
+class Context(BaseModel):
+    """Runtime CLI context."""
+
+    agent: str
+    model: str
+    thread_id: str
+    working_dir: Path
+    approval_mode: ApprovalMode = ApprovalMode.SEMI_ACTIVE
+    bash_mode: bool = False
+    current_input_tokens: int | None = None
+    current_output_tokens: int | None = None
+    context_window: int | None = None
+    recursion_limit: int
+    tool_output_max_tokens: int | None = None
+    stream_output: bool = True
+
+    @classmethod
+    async def create(
+        cls,
+        agent: str | None,
+        model: str | None,
+        approval_mode: ApprovalMode | None,
+        resume: bool,
+        working_dir: Path,
+        stream_output: bool = True,
+    ) -> "Context":
+        """Create context and populate from agent config."""
+        with timer("Load agent config"):
+            agent_config = await initializer.load_agent_config(agent, working_dir)
+
+        # Get thread_id: resume last thread or create new one
+        if resume:
+            with timer("Get threads"):
+                threads = await initializer.get_threads(
+                    agent or agent_config.name, working_dir
+                )
+            thread_id = threads[0]["thread_id"] if threads else str(uuid.uuid4())
+        else:
+            thread_id = str(uuid.uuid4())
+
+        if model:
+            with timer("Load LLM config"):
+                llm_config = await initializer.load_llm_config(model, working_dir)
+        else:
+            llm_config = agent_config.llm
+
+        tool_output_max_tokens = (
+            agent_config.tools.output_max_tokens if agent_config.tools else None
+        )
+
+        resolved_agent = agent or agent_config.name
+        resolved_model = model or agent_config.llm.alias
+
+        logger.info(f"Agent: {resolved_agent}, Model: {resolved_model}")
+        logger.info(f"Thread ID: {thread_id}")
+
+        return cls(
+            agent=resolved_agent,
+            model=resolved_model,
+            thread_id=thread_id,
+            working_dir=working_dir,
+            approval_mode=approval_mode or ApprovalMode.SEMI_ACTIVE,
+            context_window=llm_config.context_window,
+            recursion_limit=agent_config.recursion_limit,
+            tool_output_max_tokens=tool_output_max_tokens,
+            stream_output=stream_output,
+        )
+
+    def cycle_approval_mode(self) -> ApprovalMode:
+        """Cycle to the next approval mode."""
+        modes = list(ApprovalMode)
+        current_index = modes.index(self.approval_mode)
+        next_index = (current_index + 1) % len(modes)
+        self.approval_mode = modes[next_index]
+        return self.approval_mode
+
+    def toggle_bash_mode(self) -> bool:
+        """Toggle bash mode on/off."""
+        self.bash_mode = not self.bash_mode
+        return self.bash_mode

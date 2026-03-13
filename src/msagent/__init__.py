@@ -1,4 +1,3 @@
-"""msagent - A CLI agent with MCP support."""
+"""msAgent package root."""
 
-__version__ = "0.1.0"
-__author__ = "msagent"
+__all__ = []
