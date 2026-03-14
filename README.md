@@ -23,7 +23,7 @@
 - ⏱️ 下发与调度问题：下发延迟、CPU 侧调度阻塞等
 - 🧩 集群性能问题：慢节点识别与从全局到单机的逐层定位
 - 🔌 MCP 扩展：基于 Model Context Protocol 接入工具（默认启用 [msprof-mcp](https://gitcode.com/kali20gakki1/msprof_mcp)）
-- 🧠 Skills 扩展：自动加载 `<working-dir>/skills` 与内置 `resources/skills/` 技能，复用领域分析流程和知识（仓库：[mindstudio-skills](https://github.com/kali20gakki/mindstudio-skills)）
+- 🧠 Skills 扩展：自动加载 `<working-dir>/skills` 与内置 Skills；源码仓库中的内置 Skills 由 `resources/configs/default/skills/` 下的 `mindstudio-skills` 子模块提供，复用领域分析流程和知识（仓库：[mindstudio-skills](https://github.com/kali20gakki/mindstudio-skills)）
 ---
 
 ## ⚡ 快速上手
@@ -46,8 +46,27 @@
 ```bash
 git clone --recurse-submodules https://github.com/kali20gakki/msAgent.git
 cd msAgent
+git submodule sync --recursive
+# 如果要同步 mindstudio-skills 上游最新版本，再执行下一行
+git submodule update --init --recursive --remote resources/configs/default/skills
 uv sync
 ```
+
+说明：
+
+- `git clone --recurse-submodules` 会拉取主仓库当前记录的 Skills 版本。
+- 如果你只需要初始化到主仓库锁定的 Skills 版本，可执行：
+
+  ```bash
+  git submodule update --init --recursive resources/configs/default/skills
+  ```
+
+- 如果你想同步 `mindstudio-skills` 仓库的最新提交，请执行：
+
+  ```bash
+  git submodule sync --recursive
+  git submodule update --init --recursive --remote resources/configs/default/skills
+  ```
 
 如果你已经拿到 wheel 或已经发布到包源，也可以直接安装：
 
@@ -419,13 +438,43 @@ LOG_LEVEL=DEBUG
 - `repair_command` / `repair_timeout`
 - `timeout` / `sse_read_timeout` / `invoke_timeout`
 
+对于像 `msprof-mcp` 这类本地 `stdio` MCP，默认更推荐：
+
+- `stateful: true`，避免每次工具调用都重新拉起服务进程
+- 只在需要强制刷新远端版本时才临时使用 `uvx --refresh`，不要把它作为常驻默认参数
+
 ### 🧠 Skills
 
 Skills 会按以下候选目录自动加载：
 
 - `<working-dir>/skills`
-- 内置 `resources/skills/`
+- 内置 Skills（源码仓库中对应 `resources/configs/default/skills/` 子模块）
 - `<working-dir>/.msagent/skills`
+
+源码仓库中的内置 Skills 来源于 `mindstudio-skills` 子模块：
+
+- 子模块路径：`resources/configs/default/skills/`
+- 上游仓库：`https://github.com/kali20gakki/mindstudio-skills`
+
+如果你是 `git clone` 后从源码运行，建议至少执行一次以下命令初始化 Skills：
+
+```bash
+git submodule sync --recursive
+git submodule update --init --recursive resources/configs/default/skills
+```
+
+如果你要同步 `mindstudio-skills` 的最新上游提交，请执行：
+
+```bash
+git submodule sync --recursive
+git submodule update --init --recursive --remote resources/configs/default/skills
+```
+
+说明：
+
+- 不带 `--remote`：同步到当前 `msAgent` 仓库记录的 Skills 版本，适合复现和保持版本一致。
+- 带 `--remote`：同步到 `mindstudio-skills` 上游默认分支的最新提交。
+- 执行 `--remote` 后，主仓库里的 submodule 指针会变更；如果你希望固定这个版本，记得一起提交该变更。
 
 支持两种目录结构：
 
@@ -468,13 +517,14 @@ bash scripts/build_whl.sh
 Windows（CMD）：
 
 ```cmd
-git submodule update --init --recursive --force --depth 1 resources/skills
+git submodule sync --recursive
+git submodule update --init --recursive --force --depth 1 resources/configs/default/skills
 uv build --wheel --out-dir dist .
 ```
 
 如果你的 Windows 环境安装了 Git Bash / WSL，也可以直接执行 `bash scripts/build_whl.sh`。
 
-构建脚本会自动执行 `git submodule update --init --recursive --force --depth 1 resources/skills`，确保 `mindstudio-skills` 被打入 wheel 包。
+构建脚本会自动执行 `git submodule update --init --recursive --force --depth 1 resources/configs/default/skills`，确保 `mindstudio-skills` 被打入 wheel 包。
 
 打包完成后会在 `dist/` 目录生成 `mindstudio_agent-*.whl`，可直接安装：
 
