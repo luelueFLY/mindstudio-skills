@@ -1,8 +1,14 @@
 {
   "mcpServers": {
     "msprof-mcp": {
-      "command": "msprof-mcp",
-      "args": [],
+      "command": "uvx",
+      "args": [
+        "--isolated",
+        "--refresh",
+        "--from",
+        "git+https://gitcode.com/kali20gakki1/msprof_mcp.git",
+        "msprof-mcp"
+      ],
       "transport": "stdio",
       "env": {},
       "include": [],
